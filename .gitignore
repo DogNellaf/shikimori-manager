@@ -1,0 +1,30 @@
+# Secrets & tokens — never commit these
+.token.json
+config.toml
+.env
+.env.*
+!.env.example
+
+# Node / frontend build
+web/node_modules/
+web/dist/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.eggs/
+
+# Tooling
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/

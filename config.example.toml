@@ -1,0 +1,85 @@
+# shikimori-manager configuration.
+# Copy this file to "config.toml" and fill in your credentials.
+# config.toml and .token.json are gitignored — never commit real secrets.
+
+[auth]
+# Create an OAuth application at https://shikimori.one/oauth/applications
+#   Redirect URI: urn:ietf:wg:oauth:2.0:oob
+#   Scopes:       user_rates (and user)
+# You can also supply these via the SHIKI_CLIENT_ID / SHIKI_CLIENT_SECRET env vars.
+client_id = "YOUR_CLIENT_ID"
+client_secret = "YOUR_CLIENT_SECRET"
+redirect_uri = "urn:ietf:wg:oauth:2.0:oob"
+
+[settings]
+# Leave user empty to act on the account that owns the token.
+# Otherwise put a numeric id or a nickname.
+user = ""
+# A descriptive User-Agent is REQUIRED by the Shikimori API.
+user_agent = "shikimori-manager (github.com/your-username/shikimori-manager)"
+# Delay between API requests, seconds (limits: 5 rps / 90 rpm).
+request_delay = 0.3
+# Where to store the OAuth token (relative to this config file).
+token_file = ".token.json"
+
+# ---------------------------------------------------------------------------
+# Rules. Each [[rules]] block moves entries from `source` to `target` when the
+# (optional) conditions hold. Rules are checked top-to-bottom PER (media, source);
+# the FIRST matching rule wins, so order matters.
+#
+#   media   = "anime" (default) or "manga"
+#
+# Conditions (all optional, all inclusive bounds). They are media-neutral, with
+# friendly aliases:
+#   progress : min_progress / max_progress
+#              (aliases: min_episodes/max_episodes, min_chapters/max_chapters)
+#   personal : min_score / max_score        your score on the entry (0 = none)
+#   rating   : min_rating / max_rating       the title's community score
+#              (aliases: min_anime_score/max_anime_score, min_manga_score/...)
+#
+# Tip: ratings are floats (e.g. 8.38). For "strictly greater than 8", use 8.01.
+# ---------------------------------------------------------------------------
+
+# Example A — anime "planned":
+#   if at least one episode is watched -> watching (this rule is first = wins)
+#   else if the community rating > 8 -> on_hold
+[[rules]]
+name = "started -> watching"
+media = "anime"
+source = "planned"
+target = "watching"
+min_episodes = 1
+
+[[rules]]
+name = "highly rated, untouched -> on_hold"
+media = "anime"
+source = "planned"
+target = "on_hold"
+max_episodes = 0
+min_rating = 8.01
+
+# Example B — manga "planned": started reading -> watching (a.k.a. "reading").
+[[rules]]
+name = "started reading -> watching"
+media = "manga"
+source = "planned"
+target = "watching"
+min_chapters = 1
+
+# Example C — anime "dropped" split by rating:
+# [[rules]]
+# name = "dropped, great -> on_hold"
+# media = "anime"
+# source = "dropped"
+# target = "on_hold"
+# max_score = 0
+# max_episodes = 0
+# min_rating = 8.01
+#
+# [[rules]]
+# name = "dropped, rest -> planned"
+# media = "anime"
+# source = "dropped"
+# target = "planned"
+# max_score = 0
+# max_episodes = 0
